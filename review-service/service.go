@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 
 	"google.golang.org/grpc"
@@ -40,13 +41,16 @@ func (s *ReviewService) GetReview(id int64) (Review, bool) {
 }
 
 // GetReviewWithAuthor 查询评价及其作者信息。
-func (s *ReviewService) GetReviewWithAuthor(id int64) (Review, string, error) {
+func (s *ReviewService) GetReviewWithAuthor(
+	ctx context.Context,
+	id int64,
+) (Review, string, error) {
 	review, exists := s.GetReview(id)
 	if !exists {
 		return Review{}, "", fmt.Errorf("review %d not found", id)
 	}
 
-	user, err := s.userClient.GetUser(review.UserID)
+	user, err := s.userClient.GetUser(ctx, review.UserID)
 	if err != nil {
 		return Review{}, "", fmt.Errorf("get review author: %w", err)
 	}

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"os"
 	"time"
 
 	"go-microservices/user-service/userpb"
@@ -20,17 +21,25 @@ func NewUserClient(conn *grpc.ClientConn) *UserClient {
 	}
 }
 
-func (c *UserClient) GetUser(id int64) (*userpb.GetUserResponse, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+func (c *UserClient) GetUser(
+	ctx context.Context,
+	id int64,
+) (*userpb.GetUserResponse, error) {
+	ctx, cancel := context.WithTimeout(ctx, 3*time.Second)
 	defer cancel()
 
 	return c.client.GetUser(ctx, &userpb.GetUserRequest{
 		Id: id,
 	})
 }
+
 func DialUserService() (*UserClient, *grpc.ClientConn, error) {
+	addr := os.Getenv("USER_SERVICE_ADDR")
+	if addr == "" {
+		addr = "localhost:50051"
+	}
 	conn, err := grpc.NewClient(
-		"localhost:50051",
+		addr,
 		grpc.WithTransportCredentials(insecure.NewCredentials()),
 	)
 	if err != nil {

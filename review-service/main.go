@@ -1,8 +1,10 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
+	"time"
 )
 
 func main() {
@@ -14,7 +16,16 @@ func main() {
 
 	service := NewReviewService(userClient)
 
-	review, author, err := service.GetReviewWithAuthor(5001)
+	ctx, cancel := context.WithTimeout(
+		context.Background(),
+		5*time.Second,
+	)
+	defer cancel()
+
+	review, author, err := service.GetReviewWithAuthor(
+		ctx,
+		5001,
+	)
 	if err != nil {
 		log.Fatalf("查询评价失败: %v", err)
 	}
